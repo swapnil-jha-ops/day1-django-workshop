@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interview Chatbot</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .chat-container {
+            max-width: 800px;
+            margin: 50px auto;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            height: 80vh; /* Make the chat container take up 80% of the viewport height */
+        }
+        .chat-header {
+            background-color: #007bff;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.2em;
+        }
+        .chat-messages {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #e9ecef;
+        }
+        .message-bubble {
+            padding: 10px 15px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+        .user-message {
+            background-color: #dcf8c6;
+            margin-left: auto;
+            text-align: right;
+        }
+        .bot-message {
+            background-color: #ffffff;
+            margin-right: auto;
+            text-align: left;
+        }
+        .chat-input-area {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid #dee2e6;
+            background-color: #f1f1f1;
+        }
+        .chat-input-area input {
+            flex-grow: 1;
+            border-radius: 20px;
+            padding: 10px 15px;
+            border: 1px solid #ced4da;
+            margin-right: 10px;
+        }
+        .chat-input-area button {
+            border-radius: 20px;
+            padding: 10px 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            Interview Chatbot
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="message-bubble bot-message">
+                Hello! I'm your interview chatbot. Let's begin. What's your name?
+            </div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" id="userInput" placeholder="Type your message..." class="form-control">
+            <button id="sendMessageBtn" class="btn btn-primary">Send</button>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        document.getElementById('sendMessageBtn').addEventListener('click', sendMessage);
+        document.getElementById('userInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        async function sendMessage() {
+            const userInput = document.getElementById('userInput');
+            const userMessageText = userInput.value.trim();
+
+            if (userMessageText === '') return;
+
+            // Display user message
+            appendMessage(userMessageText, 'user');
+            userInput.value = '';
+
+            // Simulate bot response
+            const chatMessages = document.getElementById('chatMessages');
+            const loadingBubble = document.createElement('div');
+            loadingBubble.className = 'message-bubble bot-message';
+            loadingBubble.innerHTML = 'Thinking...';
+            chatMessages.appendChild(loadingBubble);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            try {
+                // Replace with your actual API endpoint for the chatbot
+                const response = await fetch('/your-chatbot-api-endpoint', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: userMessageText }),
+                });
+                const data = await response.json();
+
+                // Remove loading bubble
+                chatMessages.removeChild(loadingBubble);
+
+                // Display bot response
+                if (data.result) {
+                    appendMessage(data.result, 'bot');
+                } else {
+                    appendMessage("I'm sorry, I couldn't get a response.", 'bot');
+                }
+
+            } catch (error) {
+                console.error('Error fetching chatbot response:', error);
+                // Remove loading bubble and display error
+                chatMessages.removeChild(loadingBubble);
+                appendMessage("Oops! Something went wrong. Please try again.", 'bot');
+            }
+        }
+
+        function appendMessage(text, sender) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageBubble = document.createElement('div');
+            messageBubble.className = `message-bubble ${sender}-message`;
+            messageBubble.textContent = text;
+            chatMessages.appendChild(messageBubble);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    </script>
+</body>
+</html>
